@@ -786,7 +786,7 @@ final class SourceController {
                                     if (selected.isDirectory()) {
                                         current[0] = selected;
                                         refreshLocalConfigEntries(
-                                                current[0], entries, adapter, owner);
+                                                current[0], entries, adapter, (AlertDialog) owner);
                                     } else {
                                         owner.dismiss();
                                         a.toast("正在读取本地配置…");
