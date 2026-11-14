@@ -767,6 +767,16 @@ final class SourceController {
             pickDocument(a, 41, "这台设备没有系统文件选择器。");
             return;
         }
+        if (android.os.Build.VERSION.SDK_INT >= 23
+                && a.getPackageManager()
+                                .checkPermission(
+                                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                                        a.getPackageName())
+                        != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            a.requestPermissions(
+                    new String[] {android.Manifest.permission.READ_EXTERNAL_STORAGE}, 48);
+            return;
+        }
 
         final File[] current = {Environment.getExternalStorageDirectory()};
         final File storageRoot = new File("/storage");
@@ -810,6 +820,19 @@ final class SourceController {
                     refresh.run();
                 });
         dialog.show();
+    }
+
+    static boolean onRequestPermissionsResult(
+            MainActivity a, int requestCode, int[] grantResults) {
+        if (requestCode != 48) return false;
+        if (grantResults != null
+                && grantResults.length > 0
+                && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            pickLocalConfig(a);
+        } else {
+            a.notice("需要允许读取存储空间，才能选择电视上的 JSON 配置文件。");
+        }
+        return true;
     }
 
     private static void refreshLocalConfigEntries(
