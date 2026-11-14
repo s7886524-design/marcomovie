@@ -769,7 +769,7 @@ final class SourceController {
         }
         if (android.os.Build.VERSION.SDK_INT >= 23
                 && a.getPackageManager()
-                                .checkPermission(
+                        .checkPermission(
                                         android.Manifest.permission.READ_EXTERNAL_STORAGE,
                                         a.getPackageName())
                         != android.content.pm.PackageManager.PERMISSION_GRANTED) {
