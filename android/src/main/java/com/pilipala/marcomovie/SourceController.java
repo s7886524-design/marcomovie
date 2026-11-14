@@ -1,17 +1,24 @@
 package com.pilipala.marcomovie;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Future;
 
 /**
@@ -749,6 +756,107 @@ final class SourceController {
         } catch (Exception error) {
             a.notice(missingPickerNotice);
         }
+    }
+
+    /**
+     * TV fallback for devices whose firmware does not provide DocumentsUI / ACTION_OPEN_DOCUMENT.
+     * Uses the app's existing legacy external-storage permission and keeps import parsing unchanged.
+     */
+    static void pickLocalConfig(MainActivity a) {
+        if (!a.isTvDevice()) {
+            pickDocument(a, 41, "这台设备没有系统文件选择器。");
+            return;
+        }
+
+        final File[] current = {Environment.getExternalStorageDirectory()};
+        final File storageRoot = new File("/storage");
+        final ArrayList<File> entries = new ArrayList<>();
+        final ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(a, android.R.layout.simple_list_item_1, new ArrayList<String>());
+
+        final AlertDialog dialog =
+                new AlertDialog.Builder(a)
+                        .setTitle("选择本地 JSON 文件")
+                        .setAdapter(
+                                adapter,
+                                (owner, index) -> {
+                                    if (index < 0 || index >= entries.size()) return;
+                                    File selected = entries.get(index);
+                                    if (selected == null) return;
+                                    if (selected.isDirectory()) {
+                                        current[0] = selected;
+                                        refreshLocalConfigEntries(
+                                                current[0], entries, adapter, owner);
+                                    } else {
+                                        owner.dismiss();
+                                        a.toast("正在读取本地配置…");
+                                        importLocalUri(a, Uri.fromFile(selected), false);
+                                    }
+                                })
+                        .setNegativeButton("取消", null)
+                        .setNeutralButton("存储设备", null)
+                        .create();
+
+        Runnable refresh =
+                () -> refreshLocalConfigEntries(current[0], entries, adapter, dialog);
+        dialog.setOnShowListener(
+                shown -> {
+                    android.widget.Button storage = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    storage.setOnClickListener(
+                            view -> {
+                                current[0] = storageRoot;
+                                refresh.run();
+                            });
+                    refresh.run();
+                });
+        dialog.show();
+    }
+
+    private static void refreshLocalConfigEntries(
+            File directory,
+            ArrayList<File> entries,
+            ArrayAdapter<String> adapter,
+            AlertDialog dialog) {
+        entries.clear();
+        adapter.clear();
+        dialog.setTitle("选择本地 JSON 文件\n" + directory.getAbsolutePath());
+
+        File[] children;
+        try {
+            children = directory.listFiles();
+        } catch (SecurityException denied) {
+            children = null;
+        }
+        if (children != null) {
+            ArrayList<File> sorted = new ArrayList<>();
+            Collections.addAll(sorted, children);
+            Collections.sort(
+                    sorted,
+                    (left, right) -> {
+                        if (left.isDirectory() != right.isDirectory())
+                            return left.isDirectory() ? -1 : 1;
+                        return left.getName().compareToIgnoreCase(right.getName());
+                    });
+            for (File child : sorted) {
+                if (child.isHidden() || !child.canRead()) continue;
+                if (child.isDirectory()) {
+                    entries.add(child);
+                    adapter.add("📁  " + child.getName());
+                } else if (child.isFile()
+                        && child.getName().toLowerCase(Locale.ROOT).endsWith(".json")) {
+                    entries.add(child);
+                    adapter.add("📄  " + child.getName());
+                }
+            }
+        }
+        if (entries.isEmpty()) {
+            entries.add(null);
+            adapter.add(
+                    children == null
+                            ? "无法读取此目录，请进入「存储设备」选择其他目录"
+                            : "此目录没有可用的 JSON 文件");
+        }
+        adapter.notifyDataSetChanged();
     }
 
     static void addressImportDialog(MainActivity a) {
