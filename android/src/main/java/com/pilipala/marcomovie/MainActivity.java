@@ -1538,6 +1538,13 @@ public final class MainActivity extends Activity {
     }
 
     @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        SourceController.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @Override
     protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         SourceController.onActivityResult(this, request, result, data);
