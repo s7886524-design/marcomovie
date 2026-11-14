@@ -844,6 +844,12 @@ final class SourceController {
         adapter.clear();
         dialog.setTitle("选择本地 JSON 文件\n" + directory.getAbsolutePath());
 
+        File parent = directory.getParentFile();
+        if (parent != null && parent.canRead()) {
+            entries.add(parent);
+            adapter.add("⬆  返回上一级");
+        }
+
         File[] children;
         try {
             children = directory.listFiles();
