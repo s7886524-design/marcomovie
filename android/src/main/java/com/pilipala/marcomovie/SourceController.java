@@ -1243,6 +1243,7 @@ final class SourceController {
                         try (InputStream in = a.getContentResolver().openInputStream(uri);
                                 java.io.ByteArrayOutputStream bos =
                                         new java.io.ByteArrayOutputStream()) {
+                            if (in == null) throw new IOException("系统无法打开所选文件");
                             byte[] buf = new byte[8192];
                             int n;
                             while ((n = in.read(buf)) != -1) {
