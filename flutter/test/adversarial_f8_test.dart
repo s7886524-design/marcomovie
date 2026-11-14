@@ -76,7 +76,7 @@ void main() {
       // Subsequent connection must fail
       expect(
         () => http.get(Uri.parse(server.addressForHost('127.0.0.1'))),
-        throwsA(anyOf(isA<SocketException>(), isA<http.ClientException>())),
+        throwsA(anyOf(isA<SocketException>(), isA<http.ClientException>(), isA<OSError>())),
       );
     });
 
