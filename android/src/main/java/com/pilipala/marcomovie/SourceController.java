@@ -769,7 +769,7 @@ final class SourceController {
         }
         if (android.os.Build.VERSION.SDK_INT >= 23
                 && a.getPackageManager()
-                        .checkPermission(
+                                .checkPermission(
                                         android.Manifest.permission.READ_EXTERNAL_STORAGE,
                                         a.getPackageName())
                         != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -807,8 +807,7 @@ final class SourceController {
                         .setNeutralButton("存储设备", null)
                         .create();
 
-        Runnable refresh =
-                () -> refreshLocalConfigEntries(current[0], entries, adapter, dialog);
+        Runnable refresh = () -> refreshLocalConfigEntries(current[0], entries, adapter, dialog);
         dialog.setOnShowListener(
                 shown -> {
                     android.widget.Button storage = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
@@ -822,8 +821,7 @@ final class SourceController {
         dialog.show();
     }
 
-    static boolean onRequestPermissionsResult(
-            MainActivity a, int requestCode, int[] grantResults) {
+    static boolean onRequestPermissionsResult(MainActivity a, int requestCode, int[] grantResults) {
         if (requestCode != 48) return false;
         if (grantResults != null
                 && grantResults.length > 0
@@ -880,10 +878,7 @@ final class SourceController {
         }
         if (entries.isEmpty()) {
             entries.add(null);
-            adapter.add(
-                    children == null
-                            ? "无法读取此目录，请进入「存储设备」选择其他目录"
-                            : "此目录没有可用的 JSON 文件");
+            adapter.add(children == null ? "无法读取此目录，请进入「存储设备」选择其他目录" : "此目录没有可用的 JSON 文件");
         }
         adapter.notifyDataSetChanged();
     }
