@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: Platform to verify (tag releases always build every platform)
+        description: Platform to build
         type: choice
         default: all
         options:
@@ -142,8 +142,8 @@ jobs:
         run: python scripts/test_catpaw_host.py
 
   build-android:
-    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'android'
-    name: Build & Verify Android TV/Phone/Tablet APK
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.target == 'android')
+    name: Build & Verify Android TV APK
     needs: [verify-and-checks]
     runs-on: ubuntu-latest
     steps:
@@ -180,7 +180,7 @@ jobs:
             android/build/build-validation.json
 
   build-windows:
-    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'desktop' || inputs.target == 'windows'
+    if: github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'desktop' || inputs.target == 'windows')
     name: Build Windows Desktop (x64)
     needs: [verify-and-checks]
     runs-on: windows-latest
@@ -294,7 +294,7 @@ jobs:
             flutter/dist/*.sha256
 
   build-macos:
-    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'desktop' || inputs.target == 'macos'
+    if: github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'desktop' || inputs.target == 'macos')
     name: Build macOS Desktop (Apple Silicon & Intel)
     needs: [verify-and-checks]
     runs-on: macos-15-intel
@@ -339,7 +339,7 @@ jobs:
             flutter/dist/*.sha256
 
   build-ios:
-    if: github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'ios'
+    if: github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'ios')
     name: Build iOS & iPadOS (.ipa unsigned)
     needs: [verify-and-checks]
     runs-on: macos-15-intel
