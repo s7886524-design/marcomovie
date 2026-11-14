@@ -1534,7 +1534,7 @@ public final class MainActivity extends Activity {
     }
 
     void pickConfig() {
-        SourceController.pickDocument(this, 41, "这台电视没有系统文件选择器。请安装文件管理器，或使用配置地址导入。");
+        SourceController.pickLocalConfig(this);
     }
 
     @Override
